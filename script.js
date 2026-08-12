@@ -13,6 +13,20 @@ let emprestimos =
 
 
 // ========================================
+// CONFIGURAÇÃO DAS MULTAS
+// ========================================
+
+// 15 dias de tolerância depois do vencimento
+const DIAS_TOLERANCIA = 15;
+
+// Primeira multa
+const MULTA_INICIAL = 2;
+
+// A cada 7 dias depois da multa inicial
+const MULTA_SEMANAL = 4;
+
+
+// ========================================
 // LIVROS DE EXEMPLO
 // ========================================
 
@@ -176,59 +190,244 @@ function gerarId(lista) {
 
 
 // ========================================
+// CONVERTER DATA
+// ========================================
+
+function converterData(data) {
+
+    if (!data) {
+        return null;
+    }
+
+    const partes = data.split("-");
+
+    return new Date(
+        Number(partes[0]),
+        Number(partes[1]) - 1,
+        Number(partes[2])
+    );
+}
+
+
+// ========================================
+// CALCULAR DIAS DE ATRASO
+// ========================================
+
+function calcularDiasAtraso(
+    previsaoEntrega,
+    dataFinal
+) {
+
+    const dataPrevista =
+        converterData(previsaoEntrega);
+
+    const dataAtual =
+        converterData(dataFinal);
+
+    if (!dataPrevista || !dataAtual) {
+        return 0;
+    }
+
+    const diferenca =
+        dataAtual - dataPrevista;
+
+    const dias =
+        Math.floor(
+            diferenca /
+            (1000 * 60 * 60 * 24)
+        );
+
+    return Math.max(0, dias);
+}
+
+
+// ========================================
+// CALCULAR MULTA
+// ========================================
+
+function calcularMulta(
+    previsaoEntrega,
+    dataFinal
+) {
+
+    const diasAtraso =
+        calcularDiasAtraso(
+            previsaoEntrega,
+            dataFinal
+        );
+
+
+    // Ainda está dentro dos 15 dias
+    // de tolerância
+    if (
+        diasAtraso <= DIAS_TOLERANCIA
+    ) {
+
+        return 0;
+    }
+
+
+    // Quantos dias passaram
+    // depois dos 15 dias?
+    const diasDepoisTolerancia =
+        diasAtraso -
+        DIAS_TOLERANCIA;
+
+
+    // Primeira multa de R$ 2,00
+    let multa =
+        MULTA_INICIAL;
+
+
+    // A cada 7 dias adicionais
+    // soma R$ 4,00
+    const semanasExtras =
+        Math.floor(
+            (diasDepoisTolerancia - 1) / 7
+        );
+
+
+    multa +=
+        semanasExtras *
+        MULTA_SEMANAL;
+
+
+    return multa;
+}
+
+
+// ========================================
+// STATUS DA DEVOLUÇÃO
+// ========================================
+
+function obterStatusDevolucao(
+    emprestimo,
+    dataFinal
+) {
+
+    const diasAtraso =
+        calcularDiasAtraso(
+            emprestimo.previsaoEntrega,
+            dataFinal
+        );
+
+
+    if (diasAtraso === 0) {
+
+        return {
+            texto: "🟢 Devolvido no prazo",
+            classe: "no-prazo"
+        };
+
+    }
+
+
+    if (
+        diasAtraso <=
+        DIAS_TOLERANCIA
+    ) {
+
+        return {
+            texto:
+                "🟡 Dentro do prazo de tolerância",
+            classe: "tolerancia"
+        };
+
+    }
+
+
+    const multa =
+        calcularMulta(
+            emprestimo.previsaoEntrega,
+            dataFinal
+        );
+
+
+    return {
+        texto:
+            `🔴 Precisou pagar multa: R$ ${multa.toFixed(2).replace(".", ",")}`,
+        classe: "com-multa"
+    };
+}
+
+
+// ========================================
 // CADASTRAR ALUNO
 // ========================================
 
 document
     .getElementById("formAluno")
-    .addEventListener("submit", function(event) {
+    .addEventListener(
+        "submit",
+        function(event) {
 
-        event.preventDefault();
-
-        const aluno = {
-
-            id: gerarId(alunos),
-
-            nome:
-                document
-                    .getElementById("nomeAluno")
-                    .value
-                    .trim(),
-
-            matricula:
-                document
-                    .getElementById("matricula")
-                    .value
-                    .trim(),
-
-            turma:
-                document
-                    .getElementById("turma")
-                    .value
-                    .trim(),
-
-            email:
-                document
-                    .getElementById("email")
-                    .value
-                    .trim()
-
-        };
+            event.preventDefault();
 
 
-        alunos.push(aluno);
+            const aluno = {
 
-        salvarDados();
+                id:
+                    gerarId(alunos),
 
-        this.reset();
+                nome:
+                    document
+                        .getElementById(
+                            "nomeAluno"
+                        )
+                        .value
+                        .trim(),
 
-        listarAlunos();
+                matricula:
+                    document
+                        .getElementById(
+                            "matricula"
+                        )
+                        .value
+                        .trim(),
 
-        carregarAlunos();
+                turma:
+                    document
+                        .getElementById(
+                            "turma"
+                        )
+                        .value
+                        .trim(),
 
-        alert("Aluno cadastrado com sucesso!");
+                email:
+                    document
+                        .getElementById(
+                            "email"
+                        )
+                        .value
+                        .trim(),
 
-    });
+                telefone:
+                    document
+                        .getElementById(
+                            "telefone"
+                        )
+                        .value
+                        .trim()
+
+            };
+
+
+            alunos.push(aluno);
+
+            salvarDados();
+
+            this.reset();
+
+            listarAlunos();
+
+            carregarAlunos();
+
+            alert(
+                "Aluno cadastrado com sucesso!"
+            );
+
+        }
+    );
 
 
 // ========================================
@@ -238,7 +437,9 @@ document
 function listarAlunos() {
 
     const tabela =
-        document.getElementById("tabelaAlunos");
+        document.getElementById(
+            "tabelaAlunos"
+        );
 
     tabela.innerHTML = "";
 
@@ -251,15 +452,29 @@ function listarAlunos() {
 
         linha.innerHTML = `
 
-            <td>${aluno.id}</td>
+            <td>
+                ${aluno.id}
+            </td>
 
-            <td>${aluno.nome}</td>
+            <td>
+                ${aluno.nome}
+            </td>
 
-            <td>${aluno.matricula}</td>
+            <td>
+                ${aluno.matricula}
+            </td>
 
-            <td>${aluno.turma}</td>
+            <td>
+                ${aluno.turma}
+            </td>
 
-            <td>${aluno.email}</td>
+            <td>
+                ${aluno.email || "-"}
+            </td>
+
+            <td>
+                ${aluno.telefone || "-"}
+            </td>
 
             <td>
 
@@ -291,7 +506,8 @@ function excluirAluno(id) {
 
     alunos =
         alunos.filter(
-            aluno => aluno.id !== id
+            aluno =>
+                aluno.id !== id
         );
 
     salvarDados();
@@ -309,68 +525,87 @@ function excluirAluno(id) {
 
 document
     .getElementById("formLivro")
-    .addEventListener("submit", function(event) {
+    .addEventListener(
+        "submit",
+        function(event) {
 
-        event.preventDefault();
-
-
-        const livro = {
-
-            id: gerarId(livros),
-
-            titulo:
-                document
-                    .getElementById("tituloLivro")
-                    .value
-                    .trim(),
-
-            autor:
-                document
-                    .getElementById("autor")
-                    .value
-                    .trim(),
-
-            isbn:
-                document
-                    .getElementById("isbn")
-                    .value
-                    .trim(),
-
-            categoria:
-                document
-                    .getElementById("categoria")
-                    .value,
-
-            tipo:
-                document
-                    .getElementById("tipoLivro")
-                    .value,
-
-            ano:
-                document
-                    .getElementById("ano")
-                    .value,
-
-            status: "Disponível"
-
-        };
+            event.preventDefault();
 
 
-        livros.push(livro);
+            const livro = {
 
-        salvarDados();
+                id:
+                    gerarId(livros),
 
-        this.reset();
+                titulo:
+                    document
+                        .getElementById(
+                            "tituloLivro"
+                        )
+                        .value
+                        .trim(),
 
-        listarLivros();
+                autor:
+                    document
+                        .getElementById(
+                            "autor"
+                        )
+                        .value
+                        .trim(),
 
-        listarCatalogo();
+                isbn:
+                    document
+                        .getElementById(
+                            "isbn"
+                        )
+                        .value
+                        .trim(),
 
-        carregarLivros();
+                categoria:
+                    document
+                        .getElementById(
+                            "categoria"
+                        )
+                        .value,
 
-        alert("Livro cadastrado com sucesso!");
+                tipo:
+                    document
+                        .getElementById(
+                            "tipoLivro"
+                        )
+                        .value,
 
-    });
+                ano:
+                    document
+                        .getElementById(
+                            "ano"
+                        )
+                        .value,
+
+                status:
+                    "Disponível"
+
+            };
+
+
+            livros.push(livro);
+
+            salvarDados();
+
+            this.reset();
+
+            listarLivros();
+
+            listarCatalogo();
+
+            carregarLivros();
+
+            alert(
+                "Livro cadastrado com sucesso!"
+            );
+
+        }
+    );
 
 
 // ========================================
@@ -380,7 +615,9 @@ document
 function listarLivros() {
 
     const tabela =
-        document.getElementById("tabelaLivros");
+        document.getElementById(
+            "tabelaLivros"
+        );
 
     tabela.innerHTML = "";
 
@@ -393,29 +630,43 @@ function listarLivros() {
 
         linha.innerHTML = `
 
-            <td>${livro.id}</td>
+            <td>
+                ${livro.id}
+            </td>
 
-            <td>${livro.titulo}</td>
+            <td>
+                ${livro.titulo}
+            </td>
 
-            <td>${livro.autor}</td>
+            <td>
+                ${livro.autor}
+            </td>
 
-            <td>${livro.categoria}</td>
+            <td>
+                ${livro.categoria}
+            </td>
 
-            <td>${livro.tipo}</td>
+            <td>
+                ${livro.tipo}
+            </td>
 
-            <td>${livro.ano}</td>
+            <td>
+                ${livro.ano}
+            </td>
 
             <td>
 
                 <span class="status
                     ${
-                        livro.status === "Disponível"
+                        livro.status ===
+                        "Disponível"
                             ? "disponivel"
                             : "indisponivel"
                     }">
 
                     ${
-                        livro.status === "Disponível"
+                        livro.status ===
+                        "Disponível"
                             ? "🟢 Disponível"
                             : "🔴 Emprestado"
                     }
@@ -454,13 +705,15 @@ function excluirLivro(id) {
 
     const livro =
         livros.find(
-            item => item.id === id
+            item =>
+                item.id === id
         );
 
 
     if (
         livro &&
-        livro.status === "Emprestado"
+        livro.status ===
+        "Emprestado"
     ) {
 
         alert(
@@ -473,7 +726,8 @@ function excluirLivro(id) {
 
     livros =
         livros.filter(
-            item => item.id !== id
+            item =>
+                item.id !== id
         );
 
 
@@ -501,9 +755,11 @@ function carregarAlunos() {
 
 
     select.innerHTML = `
+
         <option value="">
             Selecione o aluno
         </option>
+
     `;
 
 
@@ -539,16 +795,19 @@ function carregarLivros() {
 
 
     select.innerHTML = `
+
         <option value="">
             Selecione o livro
         </option>
+
     `;
 
 
     livros
         .filter(
             livro =>
-                livro.status === "Disponível"
+                livro.status ===
+                "Disponível"
         )
         .forEach(livro => {
 
@@ -573,147 +832,182 @@ function carregarLivros() {
 
 document
     .getElementById("formEmprestimo")
-    .addEventListener("submit", function(event) {
+    .addEventListener(
+        "submit",
+        function(event) {
 
-        event.preventDefault();
+            event.preventDefault();
 
 
-        const alunoId =
-            Number(
+            const alunoId =
+                Number(
+                    document
+                        .getElementById(
+                            "alunoEmprestimo"
+                        )
+                        .value
+                );
+
+
+            const livroId =
+                Number(
+                    document
+                        .getElementById(
+                            "livroEmprestimo"
+                        )
+                        .value
+                );
+
+
+            const dataEmprestimo =
                 document
                     .getElementById(
-                        "alunoEmprestimo"
+                        "dataEmprestimo"
                     )
-                    .value
-            );
+                    .value;
 
 
-        const livroId =
-            Number(
+            const previsaoEntrega =
                 document
                     .getElementById(
-                        "livroEmprestimo"
+                        "previsaoEntrega"
                     )
-                    .value
+                    .value;
+
+
+            const dataDevolucao =
+                document
+                    .getElementById(
+                        "dataDevolucao"
+                    )
+                    .value;
+
+
+            if (
+                !alunoId ||
+                !livroId
+            ) {
+
+                alert(
+                    "Selecione o aluno e o livro."
+                );
+
+                return;
+            }
+
+
+            const livro =
+                livros.find(
+                    item =>
+                        item.id ===
+                        livroId
+                );
+
+
+            if (!livro) {
+
+                alert(
+                    "Livro não encontrado."
+                );
+
+                return;
+            }
+
+
+            if (
+                livro.status !==
+                "Disponível"
+            ) {
+
+                alert(
+                    "Este livro não está disponível."
+                );
+
+                return;
+            }
+
+
+            let multa = 0;
+
+            let statusDevolucao =
+                "Emprestado";
+
+
+            if (dataDevolucao) {
+
+                multa =
+                    calcularMulta(
+                        previsaoEntrega,
+                        dataDevolucao
+                    );
+
+                statusDevolucao =
+                    "Devolvido";
+
+            }
+
+
+            const emprestimo = {
+
+                id:
+                    gerarId(
+                        emprestimos
+                    ),
+
+                alunoId:
+                    alunoId,
+
+                livroId:
+                    livroId,
+
+                dataEmprestimo:
+                    dataEmprestimo,
+
+                previsaoEntrega:
+                    previsaoEntrega,
+
+                dataDevolucao:
+                    dataDevolucao,
+
+                multa:
+                    multa,
+
+                status:
+                    statusDevolucao
+
+            };
+
+
+            emprestimos.push(
+                emprestimo
             );
 
 
-        const dataEmprestimo =
-            document
-                .getElementById(
-                    "dataEmprestimo"
-                )
-                .value;
-
-
-        const previsaoEntrega =
-            document
-                .getElementById(
-                    "previsaoEntrega"
-                )
-                .value;
-
-
-        const dataDevolucao =
-            document
-                .getElementById(
-                    "dataDevolucao"
-                )
-                .value;
-
-
-        if (!alunoId || !livroId) {
-
-            alert(
-                "Selecione o aluno e o livro."
-            );
-
-            return;
-        }
-
-
-        const livro =
-            livros.find(
-                item => item.id === livroId
-            );
-
-
-        if (!livro) {
-
-            alert(
-                "Livro não encontrado."
-            );
-
-            return;
-        }
-
-
-        if (
-            livro.status !== "Disponível"
-        ) {
-
-            alert(
-                "Este livro não está disponível."
-            );
-
-            return;
-        }
-
-
-        const emprestimo = {
-
-            id: gerarId(emprestimos),
-
-            alunoId: alunoId,
-
-            livroId: livroId,
-
-            dataEmprestimo:
-                dataEmprestimo,
-
-            previsaoEntrega:
-                previsaoEntrega,
-
-            dataDevolucao:
-                dataDevolucao,
-
-            status:
+            livro.status =
                 dataDevolucao
-                    ? "Devolvido"
-                    : "Emprestado"
-
-        };
+                    ? "Disponível"
+                    : "Emprestado";
 
 
-        emprestimos.push(
-            emprestimo
-        );
+            salvarDados();
+
+            this.reset();
+
+            listarEmprestimos();
+
+            listarLivros();
+
+            listarCatalogo();
+
+            carregarLivros();
 
 
-        livro.status =
-            dataDevolucao
-                ? "Disponível"
-                : "Emprestado";
+            alert(
+                "Empréstimo registrado com sucesso!"
+            );
 
-
-        salvarDados();
-
-        this.reset();
-
-        listarEmprestimos();
-
-        listarLivros();
-
-        listarCatalogo();
-
-        carregarLivros();
-
-
-        alert(
-            "Empréstimo registrado com sucesso!"
-        );
-
-    });
+        }
+    );
 
 
 // ========================================
@@ -731,106 +1025,282 @@ function listarEmprestimos() {
     tabela.innerHTML = "";
 
 
-    emprestimos.forEach(emprestimo => {
+    emprestimos.forEach(
+        emprestimo => {
 
-        const aluno =
-            alunos.find(
-                item =>
-                    item.id ===
-                    emprestimo.alunoId
-            );
-
-
-        const livro =
-            livros.find(
-                item =>
-                    item.id ===
-                    emprestimo.livroId
-            );
+            const aluno =
+                alunos.find(
+                    item =>
+                        item.id ===
+                        emprestimo.alunoId
+                );
 
 
-        if (!aluno || !livro) {
-            return;
-        }
+            const livro =
+                livros.find(
+                    item =>
+                        item.id ===
+                        emprestimo.livroId
+                );
 
 
-        const linha =
-            document.createElement("tr");
+            if (
+                !aluno ||
+                !livro
+            ) {
+                return;
+            }
 
 
-        linha.innerHTML = `
+            const linha =
+                document.createElement(
+                    "tr"
+                );
 
-            <td>
-                ${aluno.nome}
-            </td>
 
-            <td>
-                ${livro.titulo}
-            </td>
+            // =================================
+            // CALCULAR SITUAÇÃO ATUAL
+            // =================================
 
-            <td>
-                ${formatarData(
-                    emprestimo.dataEmprestimo
-                )}
-            </td>
+            let statusAtual =
+                "Emprestado";
 
-            <td>
-                ${formatarData(
-                    emprestimo.previsaoEntrega
-                )}
-            </td>
+            let multaAtual =
+                0;
 
-            <td>
 
-                ${
-                    emprestimo.dataDevolucao
-                        ? formatarData(
-                            emprestimo.dataDevolucao
-                        )
+            if (
+                emprestimo.status ===
+                "Devolvido"
+            ) {
+
+                statusAtual =
+                    "Devolvido";
+
+                multaAtual =
+                    Number(
+                        emprestimo.multa
+                    ) || 0;
+
+            } else {
+
+                const hoje =
+                    new Date()
+                        .toISOString()
+                        .split("T")[0];
+
+
+                const diasAtraso =
+                    calcularDiasAtraso(
+                        emprestimo.previsaoEntrega,
+                        hoje
+                    );
+
+
+                multaAtual =
+                    calcularMulta(
+                        emprestimo.previsaoEntrega,
+                        hoje
+                    );
+
+
+                if (
+                    diasAtraso === 0
+                ) {
+
+                    statusAtual =
+                        "🟢 No prazo";
+
+                } else if (
+                    diasAtraso <=
+                    DIAS_TOLERANCIA
+                ) {
+
+                    statusAtual =
+                        "🟡 Tolerância";
+
+                } else {
+
+                    statusAtual =
+                        "🔴 Com multa";
+
+                }
+
+            }
+
+
+            // =================================
+            // TEXTO AO LADO DO NOME
+            // =================================
+
+            let situacaoAluno = "";
+
+
+            if (
+                emprestimo.status ===
+                "Devolvido"
+            ) {
+
+                const status =
+                    obterStatusDevolucao(
+                        emprestimo,
+                        emprestimo.dataDevolucao
+                    );
+
+
+                situacaoAluno = `
+
+                    <div class="${status.classe}">
+                        ${status.texto}
+                    </div>
+
+                `;
+
+            } else {
+
+                const hoje =
+                    new Date()
+                        .toISOString()
+                        .split("T")[0];
+
+
+                const status =
+                    obterStatusDevolucao(
+                        emprestimo,
+                        hoje
+                    );
+
+
+                situacaoAluno = `
+
+                    <div class="${status.classe}">
+                        ${status.texto}
+                    </div>
+
+                `;
+
+            }
+
+
+            linha.innerHTML = `
+
+                <td>
+
+                    <strong>
+                        ${aluno.nome}
+                    </strong>
+
+                    ${situacaoAluno}
+
+                </td>
+
+
+                <td>
+                    ${livro.titulo}
+                </td>
+
+
+                <td>
+                    ${formatarData(
+                        emprestimo.dataEmprestimo
+                    )}
+                </td>
+
+
+                <td>
+                    ${formatarData(
+                        emprestimo.previsaoEntrega
+                    )}
+                </td>
+
+
+                <td>
+
+                    ${
+                        emprestimo.dataDevolucao
+                            ? formatarData(
+                                emprestimo.dataDevolucao
+                            )
+                            : "-"
+                    }
+
+                </td>
+
+
+                <td>
+
+                    ${
+                        multaAtual > 0
+                            ? `
+                                <strong
+                                    style="color:#d32f2f">
+
+                                    R$
+                                    ${multaAtual
+                                        .toFixed(2)
+                                        .replace(".", ",")}
+
+                                </strong>
+                            `
+                            : `
+                                <span
+                                    style="color:#2e7d32">
+
+                                    R$ 0,00
+
+                                </span>
+                            `
+                    }
+
+                </td>
+
+
+                <td>
+
+                    <span class="status">
+
+                        ${statusAtual}
+
+                    </span>
+
+                </td>
+
+
+                <td>
+
+                    ${
+                        emprestimo.status ===
+                        "Emprestado"
+
+                        ? `
+
+                            <button
+                                class="btn-success"
+                                onclick="devolverLivro(
+                                    ${emprestimo.id}
+                                )">
+
+                                Devolver
+
+                            </button>
+
+                        `
+
                         : "-"
-                }
 
-            </td>
+                    }
 
-            <td>
+                </td>
 
-                <span class="status">
-
-                    ${emprestimo.status}
-
-                </span>
-
-            </td>
-
-            <td>
-
-                ${
-                    emprestimo.status ===
-                    "Emprestado"
-
-                    ? `
-                        <button
-                            class="btn-success"
-                            onclick="devolverLivro(
-                                ${emprestimo.id}
-                            )">
-
-                            Devolver
-
-                        </button>
-                    `
-
-                    : "-"
-                }
-
-            </td>
-
-        `;
+            `;
 
 
-        tabela.appendChild(linha);
+            tabela.appendChild(
+                linha
+            );
 
-    });
+        }
+    );
 
 }
 
@@ -843,7 +1313,8 @@ function devolverLivro(id) {
 
     const emprestimo =
         emprestimos.find(
-            item => item.id === id
+            item =>
+                item.id === id
         );
 
 
@@ -866,8 +1337,24 @@ function devolverLivro(id) {
             .split("T")[0];
 
 
+    // =================================
+    // CALCULAR MULTA
+    // =================================
+
+    const multa =
+        calcularMulta(
+            emprestimo.previsaoEntrega,
+            hoje
+        );
+
+
     emprestimo.dataDevolucao =
         hoje;
+
+
+    emprestimo.multa =
+        multa;
+
 
     emprestimo.status =
         "Devolvido";
@@ -892,9 +1379,38 @@ function devolverLivro(id) {
     carregarLivros();
 
 
-    alert(
-        "Livro devolvido com sucesso!"
-    );
+    // =================================
+    // MENSAGEM PARA O USUÁRIO
+    // =================================
+
+    if (multa > 0) {
+
+        alert(
+
+            "Livro devolvido com sucesso!\n\n" +
+
+            "⚠️ O aluno precisará pagar uma multa de " +
+
+            "R$ " +
+            multa
+                .toFixed(2)
+                .replace(".", ",") +
+
+            "."
+
+        );
+
+    } else {
+
+        alert(
+
+            "Livro devolvido com sucesso!\n\n" +
+
+            "🟢 O livro foi devolvido sem multa."
+
+        );
+
+    }
 
 }
 
@@ -929,9 +1445,14 @@ function listarCatalogo() {
     livros.forEach(livro => {
 
         if (
-            filtroAtual !== "todos" &&
-            livro.status !== filtroAtual &&
-            livro.tipo !== filtroAtual
+            filtroAtual !==
+            "todos" &&
+
+            livro.status !==
+            filtroAtual &&
+
+            livro.tipo !==
+            filtroAtual
         ) {
 
             return;
@@ -951,7 +1472,9 @@ function listarCatalogo() {
 
         if (
             pesquisa &&
-            !texto.includes(pesquisa)
+            !texto.includes(
+                pesquisa
+            )
         ) {
 
             return;
@@ -960,12 +1483,15 @@ function listarCatalogo() {
 
 
         const linha =
-            document.createElement("tr");
+            document.createElement(
+                "tr"
+            );
 
 
         linha.innerHTML = `
 
             <td>
+
                 <strong>
                     ${livro.titulo}
                 </strong>
@@ -973,9 +1499,13 @@ function listarCatalogo() {
                 <br>
 
                 <small>
+
                     ISBN:
-                    ${livro.isbn || "Não informado"}
+                    ${livro.isbn ||
+                    "Não informado"}
+
                 </small>
+
             </td>
 
 
@@ -1003,14 +1533,18 @@ function listarCatalogo() {
 
                 <span class="status
                     ${
-                        livro.status === "Disponível"
+                        livro.status ===
+                        "Disponível"
                             ? "disponivel"
                             : "indisponivel"
                     }">
 
                     ${
-                        livro.status === "Disponível"
+                        livro.status ===
+                        "Disponível"
+
                             ? "🟢 Disponível"
+
                             : "🔴 Emprestado"
                     }
 
@@ -1021,13 +1555,16 @@ function listarCatalogo() {
         `;
 
 
-        tabela.appendChild(linha);
+        tabela.appendChild(
+            linha
+        );
 
     });
 
 
     if (
-        tabela.children.length === 0
+        tabela.children.length ===
+        0
     ) {
 
         tabela.innerHTML = `
@@ -1060,21 +1597,28 @@ function filtrarLivros(
     botao
 ) {
 
-    filtroAtual = filtro;
+    filtroAtual =
+        filtro;
 
 
     document
-        .querySelectorAll(".filtro")
-        .forEach(button => {
+        .querySelectorAll(
+            ".filtro"
+        )
+        .forEach(
+            button => {
 
-            button.classList.remove(
-                "ativo"
-            );
+                button.classList.remove(
+                    "ativo"
+                );
 
-        });
+            }
+        );
 
 
-    botao.classList.add("ativo");
+    botao.classList.add(
+        "ativo"
+    );
 
 
     listarCatalogo();
@@ -1128,3 +1672,16 @@ carregarLivros();
 listarCatalogo();
 
 listarEmprestimos();
+
+
+// ========================================
+// ATUALIZAR MULTAS AUTOMATICAMENTE
+// ========================================
+
+// Atualiza a tabela periodicamente,
+// caso um empréstimo fique atrasado.
+
+setInterval(
+    listarEmprestimos,
+    60000
+);
