@@ -677,57 +677,191 @@
 
 
             <!-- =================================
-                 DEVOLUÇÕES
-            ================================== -->
+     DEVOLUÇÕES
+================================== -->
 
-            <div class="panel" id="devolucoes">
+<div class="panel" id="devolucoes">
 
-                <div class="panel-header">
+    <div class="panel-header">
 
-                    <h2>
-                        ↩️ Controle de Devoluções
-                    </h2>
+        <h2>
+            ↩️ Controle de Devoluções
+        </h2>
 
-                    <p>
-                        Veja os empréstimos registrados.
-                    </p>
+        <p>
+            Veja quem devolveu, quem ainda não devolveu
+            e as multas por atraso.
+        </p>
 
-                </div>
+    </div>
 
 
-                <div class="table-container">
+    <!-- RESUMO -->
 
-                    <table>
+    <div class="resumo-biblioteca">
 
-                        <thead>
+        <div class="card-resumo">
 
-                            <tr>
+            <span>📚 Total de livros</span>
 
-                                <th>Aluno / Situação</th>
-                                <th>Livro</th>
-                                <th>Empréstimo</th>
-                                <th>Previsão</th>
-                                <th>Devolução</th>
-                                <th>Multa</th>
-                                <th>Status</th>
-                                <th>Ação</th>
+            <strong id="totalLivros">
+                0
+            </strong>
 
-                            </tr>
+        </div>
 
-                        </thead>
 
-                        <tbody id="tabelaEmprestimos">
-                        </tbody>
+        <div class="card-resumo verde">
 
-                    </table>
+            <span>🟢 Disponíveis</span>
 
-                </div>
+            <strong id="livrosDisponiveis">
+                0
+            </strong>
 
-            </div>
+        </div>
 
-        </section>
 
-    </main>
+        <div class="card-resumo vermelho">
+
+            <span>🔴 Emprestados</span>
+
+            <strong id="livrosEmprestados">
+                0
+            </strong>
+
+        </div>
+
+
+        <div class="card-resumo amarelo">
+
+            <span>💰 Multas</span>
+
+            <strong id="totalMultas">
+                R$ 0,00
+            </strong>
+
+        </div>
+
+    </div>
+
+
+    <!-- QUEM DEVOLVEU -->
+
+    <div class="subtitulo">
+
+        <h3>
+            🟢 Livros devolvidos
+        </h3>
+
+    </div>
+
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Aluno</th>
+                    <th>Livro</th>
+                    <th>Data do empréstimo</th>
+                    <th>Previsão</th>
+                    <th>Devolução</th>
+                    <th>Status</th>
+                    <th>Multa</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="tabelaDevolvidos">
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- QUEM NÃO DEVOLVEU -->
+
+    <div class="subtitulo">
+
+        <h3>
+            🔴 Livros ainda não devolvidos
+        </h3>
+
+    </div>
+
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Aluno</th>
+                    <th>Livro</th>
+                    <th>Data do empréstimo</th>
+                    <th>Previsão</th>
+                    <th>Dias de atraso</th>
+                    <th>Multa</th>
+                    <th>Situação</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="tabelaNaoDevolvidos">
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- TODOS OS EMPRÉSTIMOS -->
+
+    <div class="subtitulo">
+
+        <h3>
+            📋 Histórico completo
+        </h3>
+
+    </div>
+
+
+    <div class="table-container">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>Aluno</th>
+                    <th>Livro</th>
+                    <th>Empréstimo</th>
+                    <th>Previsão</th>
+                    <th>Devolução</th>
+                    <th>Multa</th>
+                    <th>Status</th>
+                    <th>Ação</th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="tabelaEmprestimos">
+            </tbody>
+
+        </table>
+
+    </div>
 
 </div>
 
