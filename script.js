@@ -339,3 +339,886 @@ document
 
     }
 );
+// ========================================
+// LISTAR LIVROS
+// ========================================
+
+function listarLivros() {
+
+    const tabela =
+        document.getElementById(
+            "tabelaLivros"
+        );
+
+    if (!tabela) return;
+
+    tabela.innerHTML = "";
+
+
+    livros.forEach(livro => {
+
+        const tr =
+            document.createElement("tr");
+
+
+        const status =
+            livro.status ===
+            "Disponível";
+
+
+        tr.innerHTML = `
+
+            <td>
+                ${livro.id}
+            </td>
+
+            <td>
+                <strong>
+                    ${livro.titulo}
+                </strong>
+            </td>
+
+            <td>
+                ${livro.autor}
+            </td>
+
+            <td>
+                ${livro.categoria}
+            </td>
+
+            <td>
+                ${livro.tipo}
+            </td>
+
+            <td>
+                ${livro.ano || "-"}
+            </td>
+
+            <td>
+
+                <span class="
+                    status
+                    ${status
+                        ? "disponivel"
+                        : "indisponivel"}
+                ">
+
+                    ${
+                        status
+                        ? "🟢 Disponível"
+                        : "🔴 Emprestado"
+                    }
+
+                </span>
+
+            </td>
+
+            <td>
+
+                <button
+                    class="btn-delete"
+                    onclick="excluirLivro(${livro.id})">
+
+                    Excluir
+
+                </button>
+
+            </td>
+
+        `;
+
+        tabela.appendChild(tr);
+
+    });
+
+}
+// ========================================
+// CONTROLE DE DEVOLUÇÕES
+// ========================================
+
+function atualizarControleDevolucoes() {
+
+    const tabelaDevolvidos =
+        document.getElementById(
+            "tabelaDevolvidos"
+        );
+
+    const tabelaNaoDevolvidos =
+        document.getElementById(
+            "tabelaNaoDevolvidos"
+        );
+
+
+    if (!tabelaDevolvidos ||
+        !tabelaNaoDevolvidos) {
+
+        return;
+
+    }
+
+
+    tabelaDevolvidos.innerHTML = "";
+
+    tabelaNaoDevolvidos.innerHTML = "";
+
+
+    let totalMultas = 0;
+
+    let devolvidos = 0;
+
+    let naoDevolvidos = 0;
+
+
+    // ====================================
+    // PERCORRER EMPRÉSTIMOS
+    // ====================================
+
+    emprestimos.forEach(
+        emprestimo => {
+
+            const aluno =
+                alunos.find(
+                    a =>
+                    Number(a.id) ===
+                    Number(
+                        emprestimo.alunoId
+                    )
+                );
+
+
+            const livro =
+                livros.find(
+                    l =>
+                    Number(l.id) ===
+                    Number(
+                        emprestimo.livroId
+                    )
+                );
+
+
+            if (!aluno || !livro) {
+                return;
+            }
+
+
+            // =================================
+            // DEVOLVIDO
+            // =================================
+
+            if (
+                emprestimo.status ===
+                "Devolvido"
+            ) {
+
+                devolvidos++;
+
+
+                const multa =
+                    Number(
+                        emprestimo.multa
+                    ) || 0;
+
+
+                totalMultas +=
+                    multa;
+
+
+                const tr =
+                    document
+                    .createElement("tr");
+
+
+                tr.innerHTML = `
+
+                    <td>
+                        ${aluno.nome}
+                    </td>
+
+                    <td>
+                        ${livro.titulo}
+                    </td>
+
+                    <td>
+                        ${formatarData(
+                            emprestimo
+                            .dataEmprestimo
+                        )}
+                    </td>
+
+                    <td>
+                        ${formatarData(
+                            emprestimo
+                            .previsaoEntrega
+                        )}
+                    </td>
+
+                    <td>
+                        ${formatarData(
+                            emprestimo
+                            .dataDevolucao
+                        )}
+                    </td>
+
+                    <td>
+
+                        ${
+                            multa > 0
+
+                            ? `
+                                🔴 R$
+                                ${multa
+                                .toFixed(2)
+                                .replace(".", ",")}
+                              `
+
+                            : `
+                                🟢 Sem multa
+                              `
+                        }
+
+                    </td>
+
+                    <td>
+
+                        <span class="status devolvido">
+
+                            🟢 Devolvido
+
+                        </span>
+
+                    </td>
+
+                `;
+
+
+                tabelaDevolvidos
+                    .appendChild(tr);
+
+            }
+
+
+            // =================================
+            // NÃO DEVOLVIDO
+            // =================================
+
+            else {
+
+                naoDevolvidos++;
+
+
+                const diasAtraso =
+                    calcularDiasAtraso(
+                        emprestimo
+                        .previsaoEntrega,
+                        hoje()
+                    );
+
+
+                const multa =
+                    calcularMulta(
+                        emprestimo
+                        .previsaoEntrega,
+                        hoje()
+                    );
+
+
+                totalMultas +=
+                    multa;
+
+
+                const tr =
+                    document
+                    .createElement("tr");
+
+
+                tr.innerHTML = `
+
+                    <td>
+
+                        <strong>
+                            ${aluno.nome}
+                        </strong>
+
+                    </td>
+
+
+                    <td>
+
+                        ${livro.titulo}
+
+                    </td>
+
+
+                    <td>
+
+                        ${formatarData(
+                            emprestimo
+                            .dataEmprestimo
+                        )}
+
+                    </td>
+
+
+                    <td>
+
+                        ${formatarData(
+                            emprestimo
+                            .previsaoEntrega
+                        )}
+
+                    </td>
+
+
+                    <td>
+
+                        ${
+                            diasAtraso > 0
+
+                            ? `
+                                🔴
+                                ${diasAtraso}
+                                dias
+                              `
+
+                            : `
+                                🟢 No prazo
+                              `
+                        }
+
+                    </td>
+
+
+                    <td>
+
+                        ${
+                            multa > 0
+
+                            ? `
+                                <strong
+                                    style="
+                                    color:#d32f2f">
+
+                                    R$
+                                    ${multa
+                                    .toFixed(2)
+                                    .replace(
+                                        ".",
+                                        ","
+                                    )}
+
+                                </strong>
+                              `
+
+                            : `
+                                <span
+                                    style="
+                                    color:#2e7d32">
+
+                                    R$ 0,00
+
+                                </span>
+                              `
+                        }
+
+                    </td>
+
+
+                    <td>
+
+                        ${
+                            multa > 0
+
+                            ? `
+                                🔴 Atrasado
+                              `
+
+                            : `
+                                🟡 Emprestado
+                              `
+                        }
+
+                    </td>
+
+                `;
+
+
+                tabelaNaoDevolvidos
+                    .appendChild(tr);
+
+            }
+
+        }
+    );
+
+
+    // ====================================
+    // RESUMO
+    // ====================================
+
+    const total =
+        livros.length;
+
+
+    const disponiveis =
+        livros.filter(
+            livro =>
+            livro.status ===
+            "Disponível"
+        ).length;
+
+
+    const emprestados =
+        livros.filter(
+            livro =>
+            livro.status ===
+            "Emprestado"
+        ).length;
+
+
+    const totalLivros =
+        document.getElementById(
+            "totalLivros"
+        );
+
+
+    const livrosDisponiveis =
+        document.getElementById(
+            "livrosDisponiveis"
+        );
+
+
+    const livrosEmprestados =
+        document.getElementById(
+            "livrosEmprestados"
+        );
+
+
+    const totalMultasElemento =
+        document.getElementById(
+            "totalMultas"
+        );
+
+
+    if (totalLivros) {
+
+        totalLivros.textContent =
+            total;
+
+    }
+
+
+    if (livrosDisponiveis) {
+
+        livrosDisponiveis.textContent =
+            disponiveis;
+
+    }
+
+
+    if (livrosEmprestados) {
+
+        livrosEmprestados.textContent =
+            emprestados;
+
+    }
+
+
+    if (totalMultasElemento) {
+
+        totalMultasElemento.textContent =
+            `R$ ${totalMultas
+                .toFixed(2)
+                .replace(".", ",")}`;
+
+    }
+
+}
+// ========================================
+// REGISTRAR EMPRÉSTIMO
+// ========================================
+
+document
+.getElementById("formEmprestimo")
+.addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+
+        const alunoId =
+            Number(
+                document
+                .getElementById(
+                    "alunoEmprestimo"
+                )
+                .value
+            );
+
+
+        const livroId =
+            Number(
+                document
+                .getElementById(
+                    "livroEmprestimo"
+                )
+                .value
+            );
+
+
+        const dataEmprestimo =
+            document
+            .getElementById(
+                "dataEmprestimo"
+            )
+            .value;
+
+
+        const previsaoEntrega =
+            document
+            .getElementById(
+                "previsaoEntrega"
+            )
+            .value;
+
+
+        const livro =
+            livros.find(
+                l =>
+                Number(l.id) ===
+                Number(livroId)
+            );
+
+
+        if (!livro) {
+
+            alert(
+                "Livro não encontrado."
+            );
+
+            return;
+
+        }
+
+
+        if (
+            livro.status !==
+            "Disponível"
+        ) {
+
+            alert(
+                "🔴 Este livro já está emprestado."
+            );
+
+            return;
+
+        }
+
+
+        const emprestimo = {
+
+            id:
+                gerarId(
+                    emprestimos
+                ),
+
+            alunoId:
+
+                alunoId,
+
+            livroId:
+
+                livroId,
+
+            dataEmprestimo:
+
+                dataEmprestimo,
+
+            previsaoEntrega:
+
+                previsaoEntrega,
+
+            dataDevolucao:
+
+                "",
+
+            multa:
+
+                0,
+
+            status:
+
+                "Emprestado"
+
+        };
+
+
+        try {
+
+            await salvarEmprestimo(
+                emprestimo
+            );
+
+
+            // livro passa para emprestado
+
+            livro.status =
+                "Emprestado";
+
+
+            await salvarLivro(
+                livro
+            );
+
+
+            this.reset();
+
+
+            alert(
+                "📚 Empréstimo registrado!"
+            );
+
+
+        } catch (erro) {
+
+            console.error(erro);
+
+            alert(
+                "Erro ao registrar empréstimo."
+            );
+
+        }
+
+    }
+);
+// ========================================
+// DEVOLVER LIVRO
+// ========================================
+
+async function devolverLivro(id) {
+
+    const emprestimo =
+        emprestimos.find(
+            e =>
+            Number(e.id) ===
+            Number(id)
+        );
+
+
+    if (!emprestimo) {
+        return;
+    }
+
+
+    const livro =
+        livros.find(
+            l =>
+            Number(l.id) ===
+            Number(
+                emprestimo.livroId
+            )
+        );
+
+
+    const dataDevolucao =
+        hoje();
+
+
+    const multa =
+        calcularMulta(
+            emprestimo
+            .previsaoEntrega,
+            dataDevolucao
+        );
+
+
+    emprestimo
+        .dataDevolucao =
+        dataDevolucao;
+
+
+    emprestimo.multa =
+        multa;
+
+
+    emprestimo.status =
+        "Devolvido";
+
+
+    if (livro) {
+
+        livro.status =
+            "Disponível";
+
+    }
+
+
+    try {
+
+        await salvarEmprestimo(
+            emprestimo
+        );
+
+
+        if (livro) {
+
+            await salvarLivro(
+                livro
+            );
+
+        }
+
+
+        if (multa > 0) {
+
+            alert(
+                `⚠️ Livro devolvido com atraso!\n\n` +
+                `Multa: R$ ${multa
+                    .toFixed(2)
+                    .replace(".", ",")}`
+            );
+
+        } else {
+
+            alert(
+                "🟢 Livro devolvido sem multa!"
+            );
+
+        }
+
+    } catch (erro) {
+
+        console.error(erro);
+
+        alert(
+            "Erro ao registrar devolução."
+        );
+
+    }
+
+}
+
+
+window.devolverLivro =
+    devolverLivro;
+// ========================================
+// FIREBASE EM TEMPO REAL
+// ========================================
+
+function iniciarFirebase() {
+
+
+    // ====================================
+    // ALUNOS
+    // ====================================
+
+    onSnapshot(
+        alunosRef,
+        snapshot => {
+
+            alunos =
+                snapshot.docs.map(
+                    doc => ({
+
+                        id:
+                            Number(
+                                doc.id
+                            ),
+
+                        ...doc.data()
+
+                    })
+                );
+
+
+            listarAlunos();
+
+            carregarAlunos();
+
+            atualizarControleDevolucoes();
+
+        }
+    );
+
+
+    // ====================================
+    // LIVROS
+    // ====================================
+
+    onSnapshot(
+        livrosRef,
+        snapshot => {
+
+            livros =
+                snapshot.docs.map(
+                    doc => ({
+
+                        id:
+                            Number(
+                                doc.id
+                            ),
+
+                        ...doc.data()
+
+                    })
+                );
+
+
+            listarLivros();
+
+            listarCatalogo();
+
+            carregarLivros();
+
+            atualizarControleDevolucoes();
+
+        }
+    );
+
+
+    // ====================================
+    // EMPRÉSTIMOS
+    // ====================================
+
+    onSnapshot(
+        emprestimosRef,
+        snapshot => {
+
+            emprestimos =
+                snapshot.docs.map(
+                    doc => ({
+
+                        id:
+                            Number(
+                                doc.id
+                            ),
+
+                        ...doc.data()
+
+                    })
+                );
+
+
+            listarEmprestimos();
+
+            atualizarControleDevolucoes();
+
+        }
+    );
+
+}
+// ========================================
+// INICIAR SISTEMA
+// ========================================
+
+iniciarFirebase();
+
+
+// Atualiza multas a cada minuto
+
+setInterval(
+    atualizarControleDevolucoes,
+    60000
+);
+
+
