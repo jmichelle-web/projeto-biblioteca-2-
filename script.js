@@ -1221,4 +1221,116 @@ setInterval(
     60000
 );
 
+const livrosIniciais = [
 
+    {
+        id: 1,
+        titulo: "Harry Potter e a Pedra Filosofal",
+        autor: "J. K. Rowling",
+        isbn: "9788532530783",
+        categoria: "Fantasia",
+        tipo: "Livro",
+        ano: "1997",
+        status: "Disponível"
+    },
+
+    {
+        id: 2,
+        titulo: "O Pequeno Príncipe",
+        autor: "Antoine de Saint-Exupéry",
+        isbn: "9788522031442",
+        categoria: "Infantil",
+        tipo: "Livro",
+        ano: "1943",
+        status: "Disponível"
+    },
+
+    {
+        id: 3,
+        titulo: "Dom Casmurro",
+        autor: "Machado de Assis",
+        isbn: "9788535910663",
+        categoria: "Romance",
+        tipo: "Livro",
+        ano: "1899",
+        status: "Disponível"
+    },
+
+    {
+        id: 4,
+        titulo: "Percy Jackson e o Ladrão de Raios",
+        autor: "Rick Riordan",
+        isbn: "9788598078355",
+        categoria: "Aventura",
+        tipo: "Livro",
+        ano: "2005",
+        status: "Disponível"
+    },
+
+    {
+        id: 5,
+        titulo: "Naruto",
+        autor: "Masashi Kishimoto",
+        isbn: "9788577870154",
+        categoria: "História em Quadrinhos",
+        tipo: "Mangá",
+        ano: "1999",
+        status: "Disponível"
+    },
+
+    {
+        id: 6,
+        titulo: "Turma da Mônica",
+        autor: "Mauricio de Sousa",
+        isbn: "9788539412345",
+        categoria: "Infantil",
+        tipo: "Gibi",
+        ano: "2020",
+        status: "Disponível"
+    },
+
+    {
+        id: 7,
+        titulo: "O Hobbit",
+        autor: "J. R. R. Tolkien",
+        isbn: "9788595084748",
+        categoria: "Fantasia",
+        tipo: "Livro",
+        ano: "1937",
+        status: "Disponível"
+    },
+
+    {
+        id: 8,
+        titulo: "Sherlock Holmes",
+        autor: "Arthur Conan Doyle",
+        isbn: "9788525059986",
+        categoria: "Mistério",
+        tipo: "Livro",
+        ano: "1887",
+        status: "Disponível"
+    },
+
+    {
+        id: 9,
+        titulo: "It: A Coisa",
+        autor: "Stephen King",
+        isbn: "9788560280948",
+        categoria: "Terror",
+        tipo: "Livro",
+        ano: "1986",
+        status: "Disponível"
+    },
+
+    {
+        id: 10,
+        titulo: "1984",
+        autor: "George Orwell",
+        isbn: "9788535914849",
+        categoria: "Ficção",
+        tipo: "Livro",
+        ano: "1949",
+        status: "Disponível"
+    }
+
+];
