@@ -428,105 +428,64 @@
                  CATÁLOGO
             ================================== -->
 
-            <div class="panel" id="catalogo">
+           <div class="biblioteca-categorias">
 
-                <div class="panel-header">
+    <button onclick="filtrarLivros('todos', this)"
+            class="filtro ativo">
+        📚 Todos
+    </button>
 
-                    <h2>
-                        📖 Catálogo de Livros
-                    </h2>
+    <button onclick="filtrarLivros('Romance', this)"
+            class="filtro">
+        ❤️ Romance
+    </button>
 
-                    <p>
-                        Consulte livros disponíveis
-                        e emprestados.
-                    </p>
+    <button onclick="filtrarLivros('Fantasia', this)"
+            class="filtro">
+        🧙 Fantasia
+    </button>
 
-                </div>
+    <button onclick="filtrarLivros('Ficção', this)"
+            class="filtro">
+        🚀 Ficção
+    </button>
 
+    <button onclick="filtrarLivros('Aventura', this)"
+            class="filtro">
+        🗺️ Aventura
+    </button>
 
-                <div class="filtros">
+    <button onclick="filtrarLivros('Mistério', this)"
+            class="filtro">
+        🔎 Mistério
+    </button>
 
-                    <button
-                        class="filtro ativo"
-                        onclick="filtrarLivros('todos', this)">
+    <button onclick="filtrarLivros('Terror', this)"
+            class="filtro">
+        👻 Terror
+    </button>
 
-                        Todos
+    <button onclick="filtrarLivros('História', this)"
+            class="filtro">
+        🏛️ História
+    </button>
 
-                    </button>
+    <button onclick="filtrarLivros('Ciências', this)"
+            class="filtro">
+        🔬 Ciências
+    </button>
 
+    <button onclick="filtrarLivros('Tecnologia', this)"
+            class="filtro">
+        💻 Tecnologia
+    </button>
 
-                    <button
-                        class="filtro"
-                        onclick="filtrarLivros('Disponível', this)">
+    <button onclick="filtrarLivros('Infantil', this)"
+            class="filtro">
+        🧸 Infantil
+    </button>
 
-                        🟢 Disponíveis
-
-                    </button>
-
-
-                    <button
-                        class="filtro"
-                        onclick="filtrarLivros('Emprestado', this)">
-
-                        🔴 Emprestados
-
-                    </button>
-
-
-                    <button
-                        class="filtro"
-                        onclick="filtrarLivros(
-                            'História em Quadrinhos',
-                            this
-                        )">
-
-                        💥 Histórias em Quadrinhos
-
-                    </button>
-
-                </div>
-
-
-                <div class="pesquisa">
-
-                    <input
-                        type="text"
-                        id="pesquisaLivro"
-                        placeholder="🔎 Pesquisar livro, autor ou categoria..."
-                        oninput="pesquisarLivros()"
-                    >
-
-                </div>
-
-
-                <div class="table-container">
-
-                    <table>
-
-                        <thead>
-
-                            <tr>
-
-                                <th>Livro</th>
-                                <th>Autor</th>
-                                <th>Categoria</th>
-                                <th>Tipo</th>
-                                <th>Ano</th>
-                                <th>Status</th>
-
-                            </tr>
-
-                        </thead>
-
-                        <tbody id="tabelaCatalogo">
-                        </tbody>
-
-                    </table>
-
-                </div>
-
-            </div>
-
+</div>
 
 
             <!-- =================================
